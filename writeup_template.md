@@ -27,6 +27,14 @@ The goals / steps of this project are the following:
 [image6]: ./examples/placeholder.png "Traffic Sign 3"
 [image7]: ./examples/placeholder.png "Traffic Sign 4"
 [image8]: ./examples/placeholder.png "Traffic Sign 5"
+[image_distribution]: ./examples/distribution_1.png
+[image_random]: ./examples/random.png
+[image_hls]: ./examples/hls.png
+[image_clahe]: ./examples/clahe.png
+[image_augmentation]: ./examples/augmentation.png
+[image_newDistribution]: ./distribution_2.png
+
+
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
@@ -45,40 +53,55 @@ You're reading it! and here is a link to my [project code](https://github.com/ud
 I used the pandas library to calculate summary statistics of the traffic
 signs data set:
 
-* The size of training set is ?
-* The size of the validation set is ?
-* The size of test set is ?
-* The shape of a traffic sign image is ?
-* The number of unique classes/labels in the data set is ?
+* The size of training set is 34799
+* The size of the validation set is 4410
+* The size of test set is 12630
+* The shape of a traffic sign image is (32x32x3)
+* The number of unique classes/labels in the data set is 43
 
 #### 2. Include an exploratory visualization of the dataset.
 
-Here is an exploratory visualization of the data set. It is a bar chart showing how the data ...
+Here is an exploratory visualization of the data set. It is a bar chart showing how the data distribution per class. 
 
-![alt text][image1]
+![alt text][image_distribution]
+It's clear that the image set is heavely unbalanced.
+
+I also plot 18 random images in order to see similarities and differences before starting the image preporcess.
+
+![alt text][image_random]
+
 
 ### Design and Test a Model Architecture
 
 #### 1. Describe how you preprocessed the image data. What techniques were chosen and why did you choose these techniques? Consider including images showing the output of each preprocessing technique. Pre-processing refers to techniques such as converting to grayscale, normalization, etc. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, and provide example images of the additional data. Then describe the characteristics of the augmented training set like number of images in the set, number of images for each class, etc.)
 
-As a first step, I decided to convert the images to grayscale because ...
+As a first step, I decided to homogenize lighting conditions. I firstly decided to equalize the image in RGB. To achieve this, I converted the image to HLS, I equalize the L component an then revert it back to RGB.
 
-Here is an example of a traffic sign image before and after grayscaling.
+Here is an example of a traffic sign image before and after equalization.
 
-![alt text][image2]
+![alt text][image_hls]
 
-As a last step, I normalized the image data because ...
+However, I decided to convert to grayscale because Traffic signs do not rely on the colors but on the shape of each figure. 
+I've worked with object detection and the tensorflow API for object detection. In my experience, Contrast Limit Adaptative Histogram Equalization (CLAHE) gives a good performance. Here is an image of the 18 images shown above after CLAHE. 
 
-I decided to generate additional data because ... 
+![alt text][image_clahe]
 
-To add more data to the the data set, I used the following techniques because ... 
+I decided to generate data augmentation because the data set is clearly unbalanced, ther are classes with up to 2000 images whereas there are some with less than 200.
+
+To add more data to the the data set, I used 4 different techniques
+1. Image rotation (between [-25,25] degrees)
+2. Random noise.
+3. Image translation.
+4. Mix of the 3 above.
 
 Here is an example of an original image and an augmented image:
 
-![alt text][image3]
+![alt text][image_augmentation]
 
-The difference between the original data set and the augmented data set is the following ... 
+I calculated the mean distribution per class, every class that is under the mean was augmented by a factor of 2.5.
+The data set was augmented by N images. Now we can see the following distribution.
 
+![alt text][image_newDistribution]
 
 #### 2. Describe what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
 
@@ -86,13 +109,21 @@ My final model consisted of the following layers:
 
 | Layer         		|     Description	        					| 
 |:---------------------:|:---------------------------------------------:| 
-| Input         		| 32x32x3 RGB image   							| 
-| Convolution 3x3     	| 1x1 stride, same padding, outputs 32x32x64 	|
+| Input         		| 32x32x1 Grayscale image   					| 
+| Convolution 5x5     	| 1x1 stride, valid padding, outputs 28x28x6 	|
 | RELU					|												|
-| Max pooling	      	| 2x2 stride,  outputs 16x16x64 				|
-| Convolution 3x3	    | etc.      									|
-| Fully connected		| etc.        									|
-| Softmax				| etc.        									|
+| Avg pooling	      	| 2x2 stride, valid padding, outputs 14x14x6 	|
+| Convolution 5x5	    | 1x1 stride, valid padding, outputs 10x10x16	|
+| RELU					|												|
+| Avg pooling	      	| 2x2 stride, valid padding, outputs 5x5x16 	|
+| Flatten				| Input 400										|
+| Fully connected		| Output 200 									|
+| RELU					|												|
+| Dropout				| 0.6 when training								|
+| Fully connected		| Output 90    									|
+| RELU					|												|
+| Dropout				| 0.6 when training								|
+| Softmax				| Output 43    									|
 |						|												|
 |						|												|
  
