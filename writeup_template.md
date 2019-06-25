@@ -33,7 +33,7 @@ The goals / steps of this project are the following:
 [image_clahe]: ./examples/clahe.png
 [image_augmentation]: ./examples/augmentation.png
 [image_newDistribution]: ./distribution_2.png
-
+[images_web]: ./examples/web.png
 
 
 ## Rubric Points
@@ -64,7 +64,7 @@ signs data set:
 Here is an exploratory visualization of the data set. It is a bar chart showing how the data distribution per class. 
 
 ![alt text][image_distribution]
-It's clear that the image set is heavely unbalanced.
+It's clear that the image set is heavily unbalanced.
 
 I also plot 18 random images in order to see similarities and differences before starting the image preporcess.
 
@@ -131,38 +131,30 @@ My final model consisted of the following layers:
 
 #### 3. Describe how you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
 
-To train the model, I used an ....
+To train the model, I used an Adam Optimizer which is similar to Stochastic Gradient descent. I used a batch size of 256, I found out that with a bigger batch I reached a better performance but the training was slower. I decided to take 20 epochs as if I increase the number to 50 epochs, it tended to reach an asymptote around 0.97.About the learning rate, I took different values, I started with 0.001 but it is too small, it requieres up to 50 epochs to reach a good performance. I
 
 #### 4. Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
 
+I tried LeNet architecture, from the course. From the beginning I realize that color on images was not the most relevant and I knew I would work with grayscale. As the data set was in gray scale and the images were the same resolution, I decided to take the same architecture. 
+
+I tried to tweak different parameters from the traing data to the drop out. Firstly, without data augmentation I got a validation accuracy of 0.93 after 20 epochs. Then I tried data augmentation, I double the images of the classes that were under the mean and only with ratation, I got almost the same 0.934. Then I increase the data by factor of 3 instead of 2 and added different data transformation (noise, translatiom, mix oh them) and I got 0.96 after 50 epochs. 
+
+The biggest difference was when I applied dropout to the fully connected layers. I reached 0.96 in the first 10 epochs. As mentioned in the course, I started with a dropout of 0.5, however the accuracy was very small at the first epoch, I decided to drop less characteristics by setting the dropout at 0.6
+
 My final model results were:
-* training set accuracy of ?
-* validation set accuracy of ? 
-* test set accuracy of ?
+* validation set accuracy of 0.971
+* test set accuracy of 0.949
 
-If an iterative approach was chosen:
-* What was the first architecture that was tried and why was it chosen?
-* What were some problems with the initial architecture?
-* How was the architecture adjusted and why was it adjusted? Typical adjustments could include choosing a different model architecture, adding or taking away layers (pooling, dropout, convolution, etc), using an activation function or changing the activation function. One common justification for adjusting an architecture would be due to overfitting or underfitting. A high accuracy on the training set but low accuracy on the validation set indicates over fitting; a low accuracy on both sets indicates under fitting.
-* Which parameters were tuned? How were they adjusted and why?
-* What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
-
-If a well known architecture was chosen:
-* What architecture was chosen?
-* Why did you believe it would be relevant to the traffic sign application?
-* How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
- 
 
 ### Test a Model on New Images
 
 #### 1. Choose five German traffic signs found on the web and provide them in the report. For each image, discuss what quality or qualities might be difficult to classify.
 
-Here are five German traffic signs that I found on the web:
+Here are eight German traffic signs that I found on the web and resized to 32x32x3.
 
-![alt text][image4] ![alt text][image5] ![alt text][image6] 
-![alt text][image7] ![alt text][image8]
+![alt text][images_web]
 
-The first image might be difficult to classify because ...
+The first image might be difficult to classify it shows 2 signals, so the principal sign "General caution", is smaller than the ones used for training. The second one seems a bit distorted afer resizing. The rest seem ok.
 
 #### 2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
 
@@ -170,33 +162,93 @@ Here are the results of the prediction:
 
 | Image			        |     Prediction	        					| 
 |:---------------------:|:---------------------------------------------:| 
-| Stop Sign      		| Stop sign   									| 
-| U-turn     			| U-turn 										|
-| Yield					| Yield											|
-| 100 km/h	      		| Bumpy Road					 				|
-| Slippery Road			| Slippery Road      							|
+| General Caution  		| Roundabout madatory   						| 
+| Turn right ahead 		| Priority Road 								|
+| Slippery Road			| Beware of ice									|
+| Right of way   		| Right of way 					 				|
+| Yield     			| Yield               							|
+| Bumpy Road  			| Bumpy Road          							|
+| Priority Road 		| Priority Road      							|
+| Speed limit 30Km/h    | Speed limit 30Km/h      						|
 
 
-The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 80%. This compares favorably to the accuracy on the test set of ...
+The model was able to correctly guess 6 of the 8 traffic signs, which gives an accuracy of 0.625%. This is far from the testing and validation accuracy. The classes that wer well identified had an initial daset up to the mean distribution per class, they was not augmented. For classes that were augmented, maybe they need more real data instead of fake. In addition, I generated fake data by a factor of 3, so if the random transformations were not different enough, it may cause overfitting for these particular classes.
+
+Another difficulty is the resolution of the images, in the case of slippery road, It's hard to identify even by my eye. 
 
 #### 3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
 
-The code for making predictions on my final model is located in the 11th cell of the Ipython notebook.
+I will show only the top 3 probabilities, as the 1st probability is 0.9 in most cases.
 
-For the first image, the model is relatively sure that this is a stop sign (probability of 0.6), and the image does contain a stop sign. The top five soft max probabilities were
 
 | Probability         	|     Prediction	        					| 
 |:---------------------:|:---------------------------------------------:| 
-| .60         			| Stop sign   									| 
-| .20     				| U-turn 										|
-| .05					| Yield											|
-| .04	      			| Bumpy Road					 				|
-| .01				    | Slippery Road      							|
+| 9.99 e-1     			| 40   Roundabout mandatory						| 
+| 7.08 e-6    			| 37   Go straight or left						|
+| 3.39 e-6  			| 12   Priority road							|
 
 
-For the second image ... 
+For the second image
 
-### (Optional) Visualizing the Neural Network (See Step 4 of the Ipython notebook for more details)
-#### 1. Discuss the visual output of your trained network's feature maps. What characteristics did the neural network use to make classifications?
+| Probability         	|     Prediction	        					| 
+|:---------------------:|:---------------------------------------------:| 
+| 8.64 e-1     			| 12  Priority road								| 
+| 5.50 e-2  			| 33  Turn right ahead  						|
+| 2.85 e-2				| 35  Ahead only								|
+
+
+For the third image
+
+| Probability         	|     Prediction	        					| 
+|:---------------------:|:---------------------------------------------:| 
+| 3.37 e-1     			| 30  Beware of ice/snow						| 
+| 2.91 e-1  			| 29  Bicycles crossing							|
+| 1.37 e-1				| 40  Roundabout mandatory						|
+
+
+For the fourth image
+
+| Probability         	|     Prediction	        					| 
+|:---------------------:|:---------------------------------------------:| 
+| 9.99 e-1     			| 11  Right-of-way at the next intersection		| 
+| 5.18 e-7  			| 30  Beware of ice/snow						|
+| 9.14 e-8				| 21  Double curve								|
+
+For the fifth image
+
+| Probability         	|     Prediction	        					| 
+|:---------------------:|:---------------------------------------------:| 
+| 9.99 e-1     			| 13  Yield  									| 
+| 1.15 e-7  			| 35  Ahead only								|
+| 2.35 e-8				| 15  No vehicles								|
+
+
+For the sixth image
+
+| Probability         	|     Prediction	        					| 
+|:---------------------:|:---------------------------------------------:| 
+| 9.42 e-1     			| 22  Bumpy road								| 
+| 3.78 e-2  			| 26  Traffic signals							|
+| 4.87 e-3				| 29  Bicycles crossing							|
+
+
+For the seventh image
+
+| Probability         	|     Prediction	        					| 
+|:---------------------:|:---------------------------------------------:| 
+| 9.99 e-1     			| 12  Priority road								| 
+| 1.10 e-5  			| 40  Roundabout mandatory						|
+| 2.43 e-6				| 7	  Speed limit (100km/h)						|
+
+
+For the egiht image
+
+| Probability         	|     Prediction	        					| 
+|:---------------------:|:---------------------------------------------:| 
+| 9.85 e-1     			| 1  Speed limit (30km/h)						| 
+| 1.17 e-2  			| 2  Speed limit (50km/h)						|
+| 1.78 e-3				| 5	 Speed limit (80km/h)						|
+
+
 
 
